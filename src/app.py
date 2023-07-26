@@ -55,7 +55,7 @@ def funk(df):
     dates = dates.unique()
 
     # To reduce the number of marks, let's space them out evenly
-    step = max(1, len(dates) // 5)  # Show 10 evenly spaced marks at most
+    step = max(1, len(dates) // 10)  # Show 10 evenly spaced marks at most
     marks = {i: dates[i] for i in range(0, len(dates), step)}
 
     app.layout = html.Div([
