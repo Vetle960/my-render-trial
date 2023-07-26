@@ -1,13 +1,12 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+
 #import seaborn as sns
 import plotly.express as px
 import plotly.graph_objects as go
 import scipy.stats as stats
-import matplotlib.pyplot as plt
-from mlxtend.plotting import scatterplotmatrix
-from tkinter.filedialog import askopenfilename
+
+
 
 df = pd.read_csv('ikke_ep.csv')
 #fil = askopenfilename()
