@@ -6,6 +6,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 import scipy.stats as stats
 
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import plotly.graph_objs as go
+from datetime import datetime
+import dash
+
 
 
 df = pd.read_csv('../ikke_ep.csv')
@@ -36,18 +42,14 @@ diff_df['time'] = df.time
 diff_df['dato'] = df.dato
 diff_df['epilsepsi'] = df.epilsepsi
 
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output
-import plotly.graph_objs as go
-from datetime import datetime
+
+app = dash.Dash(__name__)
+server = app.server
 
 def funk(df):
 
     diff_df = df.copy()
-    app = dash.Dash(__name__)
-    server = app.server
-
+    
     # Define your list of strings
     dates = diff_df['dato'].dt.strftime("%U-%Y")
     dates = dates.unique()
