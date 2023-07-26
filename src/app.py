@@ -8,7 +8,7 @@ import scipy.stats as stats
 
 
 
-df = pd.read_csv('ikke_ep.csv')
+df = pd.read_csv('../ikke_ep.csv')
 #fil = askopenfilename()
 #df = pd.read_csv(fil)
 # "C:\Users\vetle\OneDrive\data_science\env\H39_15_juni_23.csv"
