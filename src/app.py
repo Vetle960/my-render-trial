@@ -148,7 +148,7 @@ def update_graph(stored_data, slider_value, camera_pos):
         if slider_value is not None:
             min_date = pd.to_datetime(dates[slider_value[0]])
             max_date = pd.to_datetime(dates[slider_value[1]])
-            df = df[(df['time'].dt.date >= min_date.date()) & 
+            df = df[(df['time'].dt.date >= min_date.date()) &  
                    (df['time'].dt.date <= max_date.date())]
         
         layout = go.Layout(
