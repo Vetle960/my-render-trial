@@ -9,34 +9,55 @@ from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
 from datetime import datetime
 
+# Define common styles
+FONT_FAMILY = "Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif"
+
 app = Dash(__name__, suppress_callback_exceptions=True)
 server = app.server
 
 app.layout = html.Div([
     html.H1("3D Data Visualization", 
-            style={'textAlign': 'center', 'margin': '20px'}),
+            style={
+                'textAlign': 'center', 
+                'margin': '20px',
+                'fontFamily': FONT_FAMILY,
+                'fontWeight': '600',
+                'color': '#1a1a1a',
+                'fontSize': '2.5rem'
+            }),
     
     dcc.Upload(
         id='upload-data',
         children=html.Div([
             'Drag and Drop or ',
-            html.A('Select a CSV File')
+            html.A('Select a CSV File', style={'color': '#2563eb', 'textDecoration': 'underline'})
         ]),
         style={
             'width': '100%',
             'height': '60px',
             'lineHeight': '60px',
-            'borderWidth': '1px',
+            'borderWidth': '2px',
             'borderStyle': 'dashed',
-            'borderRadius': '5px',
+            'borderRadius': '8px',
             'textAlign': 'center',
-            'margin': '10px'
+            'margin': '10px',
+            'fontFamily': FONT_FAMILY,
+            'color': '#4b5563',
+            'backgroundColor': '#f9fafb',
+            'transition': 'border-color 0.3s ease',
+            'cursor': 'pointer'
         },
         multiple=False
     ),
     
     html.Div(id='error-container', 
-             style={'color': 'red', 'margin': '10px', 'textAlign': 'center'}),
+             style={
+                 'color': '#dc2626',
+                 'margin': '10px',
+                 'textAlign': 'center',
+                 'fontFamily': FONT_FAMILY,
+                 'fontSize': '0.875rem'
+             }),
     
     # Add camera store
     dcc.Store(id='camera-store', storage_type='memory'),
@@ -52,9 +73,21 @@ app.layout = html.Div([
     # Slider container with styling
     html.Div([
         html.P("Time Range Filter", 
-               style={'textAlign': 'center', 'margin': '10px', 'font-weight': 'bold'}),
+               style={
+                   'textAlign': 'center',
+                   'margin': '10px',
+                   'fontFamily': FONT_FAMILY,
+                   'fontWeight': '500',
+                   'color': '#1a1a1a',
+                   'fontSize': '1.125rem'
+               }),
         html.Div(id='slider-container',
-                 style={'width': '80%', 'margin': 'auto', 'padding': '20px'})
+                 style={
+                     'width': '80%',
+                     'margin': 'auto',
+                     'padding': '20px',
+                     'fontFamily': FONT_FAMILY
+                 })
     ])
 ])
 
@@ -153,15 +186,36 @@ def update_graph(stored_data, slider_value, camera_pos):
         
         layout = go.Layout(
             scene=dict(
-                xaxis=dict(title='HRV Max'),
-                yaxis=dict(title='Relative Stroke Volume Max'),
-                zaxis=dict(title='Respiration Rate Max'),
+                xaxis=dict(
+                    title='HRV Max',
+                    titlefont=dict(
+                        family=FONT_FAMILY,
+                        size=14
+                    )
+                ),
+                yaxis=dict(
+                    title='Relative Stroke Volume Max',
+                    titlefont=dict(
+                        family=FONT_FAMILY,
+                        size=14
+                    )
+                ),
+                zaxis=dict(
+                    title='Respiration Rate Max',
+                    titlefont=dict(
+                        family=FONT_FAMILY,
+                        size=14
+                    )
+                ),
                 bgcolor='rgb(250,250,250)',
                 camera=camera_pos if camera_pos else dict()
             ),
             margin=dict(l=0, r=0, b=0, t=0),
             paper_bgcolor='white',
-            uirevision=True
+            uirevision=True,
+            font=dict(
+                family=FONT_FAMILY
+            )
         )
         
         figure = {
@@ -176,8 +230,17 @@ def update_graph(stored_data, slider_value, camera_pos):
                     colorscale='Portland',
                     opacity=0.8,
                     colorbar=dict(
-                        title="Heart Rate",
-                        titleside="right"
+                        title=dict(
+                            text="Heart Rate",
+                            font=dict(
+                                family=FONT_FAMILY,
+                                size=14
+                            )
+                        ),
+                        titleside="right",
+                        tickfont=dict(
+                            family=FONT_FAMILY
+                        )
                     )
                 ),
                 hovertemplate=
