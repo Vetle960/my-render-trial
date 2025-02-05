@@ -16,7 +16,7 @@ app = Dash(__name__, suppress_callback_exceptions=True)
 server = app.server
 
 app.layout = html.Div([
-    html.H1("3D Data Visualization", 
+    html.H1("3D Visualisering", 
             style={
                 'textAlign': 'center', 
                 'margin': '20px',
@@ -33,7 +33,7 @@ app.layout = html.Div([
             html.A('Select a CSV File', style={'color': '#2563eb', 'textDecoration': 'underline'})
         ]),
         style={
-            'width': '100%',
+            'width': '99%',
             'height': '60px',
             'lineHeight': '60px',
             'borderWidth': '2px',
@@ -72,7 +72,7 @@ app.layout = html.Div([
     
     # Slider container with styling
     html.Div([
-        html.P("Time Range Filter", 
+        html.P("Filtrer Dato", 
                style={
                    'textAlign': 'center',
                    'margin': '10px',
