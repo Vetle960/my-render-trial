@@ -259,17 +259,17 @@ def update_graph(stored_data, slider_value, camera_pos):
             'data': [
                 go.Scatter3d(
                     x=df['heart_rate_variability_max'],
-                    y=df['relative_stroke_volume_max'],
+                    y=df['heart_rate_max'],
                     z=df['respiration_rate_max'],
                     mode='markers',
                     marker=dict(
                         size=8,
-                        color=df['heart_rate_max'],
-                        colorscale='Portland',
+                        color=df['relative_stroke_volume_max'],
+                        colorscale='Viridis',
                         opacity=0.8,
                         colorbar=dict(
                             title=dict(
-                                text="Heart Rate",
+                                text="Relative Stroke Volume",
                                 font=dict(
                                     family=FONT_FAMILY,
                                     size=14
@@ -301,7 +301,7 @@ def update_graph(stored_data, slider_value, camera_pos):
                         )
                     ),
                     yaxis=dict(
-                        title='Relative Stroke Volume Max',
+                        title='Heart Rate Max',
                         titlefont=dict(
                             family=FONT_FAMILY,
                             size=14
