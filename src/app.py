@@ -284,9 +284,9 @@ def update_graph(stored_data, slider_value, camera_pos):
                     hovertemplate=(
                         '<b>Time</b>: %{customdata}<br>' +
                         '<b>HRV Max</b>: %{x:.1f}<br>' +
-                        '<b>RSV Max</b>: %{y:.1f}<br>' +
+                        '<b>HR Max</b>: %{y:.1f}<br>' +
                         '<b>RR Max</b>: %{z:.1f}<br>' +
-                        '<b>HR Max</b>: %{marker.color:.1f}<br>'
+                        '<b>RSV Max</b>: %{marker.color:.1f}<br>'
                     ),
                     customdata=df['time'].dt.strftime('%Y-%m-%d %H:%M')
                 )
