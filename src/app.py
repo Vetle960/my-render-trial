@@ -270,12 +270,12 @@ def update_graph(stored_data, slider_value, camera_pos):
                         colorbar=dict(
                             title=dict(
                                 text="Relative Stroke Volume",
+                                side="right",  # Use 'side' within the title dictionary
                                 font=dict(
                                     family=FONT_FAMILY,
                                     size=14
                                 )
                             ),
-                            titleside="right",
                             tickfont=dict(
                                 family=FONT_FAMILY
                             )
