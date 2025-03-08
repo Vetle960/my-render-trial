@@ -294,26 +294,32 @@ def update_graph(stored_data, slider_value, camera_pos):
             'layout': go.Layout(
                 scene=dict(
                     xaxis=dict(
-                        title='HRV Max',
-                        titlefont=dict(
-                            family=FONT_FAMILY,
-                            size=14
+                        title=dict(
+                            text='HRV Max',
+                            font=dict(
+                                family=FONT_FAMILY,
+                                size=14
+                            )
                         )
                     ),
                     yaxis=dict(
-                        title='Heart Rate Max',
-                        titlefont=dict(
-                            family=FONT_FAMILY,
-                            size=14
+                        title=dict(
+                            text='Heart Rate Max',
+                            font=dict(
+                                family=FONT_FAMILY,
+                                size=14
+                            )
                         )
                     ),
                     zaxis=dict(
-                        title='Respiration Rate Max',
-                        titlefont=dict(
-                            family=FONT_FAMILY,
-                            size=14
+                        title=dict(
+                            text='Respiration Rate Max',
+                            font=dict(
+                                family=FONT_FAMILY,
+                                size=14
+                            )
                         )
-                    ),
+                    ),                  
                     bgcolor='rgb(250,250,250)',
                     camera=camera_pos if camera_pos else dict()
                 ),
