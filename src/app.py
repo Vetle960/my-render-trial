@@ -1,3 +1,19 @@
+"""
+3D Visualization Dashboard for Biosignal Data
+
+This application supports two data formats:
+
+OLD FORMAT:
+- Columns: time, heart_rate_max, heart_rate_variability_max, respiration_rate_max, relative_stroke_volume_max
+- Data is already aggregated with min/median/max values
+
+NEW FORMAT:
+- Columns: biosignaltime, heartratevalue, respirationratevalue, heartratevariabilityvalue, relativestrokevolumevalue
+- Raw data that gets automatically converted to old format using aggregation
+
+The application automatically detects the format and converts new format data to old format for visualization.
+"""
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -28,6 +44,110 @@ slider_container_styles = {
 
 app = Dash(__name__, suppress_callback_exceptions=True)
 server = app.server
+
+def convert_new_format_to_old(new_df):
+    """
+    Convert new format data to old format for compatibility.
+    
+    Args:
+        new_df (pd.DataFrame): DataFrame in new format
+        
+    Returns:
+        pd.DataFrame: DataFrame in old format
+    """
+    # Normalize columns to lowercase
+    new_df.columns = [c.lower() for c in new_df.columns]
+    # ——— 0) guard against any accidental duplicate columns ———
+    new_df = new_df.loc[:, ~new_df.columns.duplicated()]
+    
+    # ——— 1) unify your time column ———
+    if 'biosignaltime' in new_df.columns:
+        # if you already have a plain 'time', drop the old one
+        if 'time' in new_df.columns:
+            new_df = new_df.drop(columns='biosignaltime')
+        else:
+            new_df = new_df.rename(columns={'biosignaltime':'time'})
+    
+    if 'time' not in new_df.columns:
+        raise KeyError("no time column found in new_df")
+    
+    # ——— 2) pick your numeric columns (exclude 'time') ———
+    numeric_cols = new_df.select_dtypes(include='number').columns.difference(['time'])
+    
+    # ——— 3) group on time → min/median/max ———
+    agg = (
+        new_df
+          .groupby('time')[numeric_cols]
+          .agg(['min','median','max'])
+    )
+    
+    # ——— 4) flatten the MultiIndex → e.g. 'heartratevalue_min' ———
+    agg.columns = [f"{col}_{stat}" for col, stat in agg.columns]
+    
+    # ——— 5) rename your sensor bases into the old-format names ———
+    base_map = {
+        'heartratevalue':            'heart_rate',
+        'respirationratevalue':      'respiration_rate',
+        'heartratevariabilityvalue': 'heart_rate_variability',
+        'relativestrokevolumevalue': 'relative_stroke_volume',
+        # …add more if you ever rename other columns…
+    }
+    def _rename(c):
+        base, stat = c.rsplit('_', 1)
+        return f"{base_map.get(base, base)}_{stat}"
+    
+    agg = agg.rename(columns={c: _rename(c) for c in agg.columns})
+    
+    # ——— 6) reset time back into a column ———
+    out = agg.reset_index()
+    
+    # ——— 7) take *all* the other (non-numeric, non-time) cols and join them back ———
+    others = [c for c in new_df.columns if c not in numeric_cols and c != 'time']
+    if others:
+        extras = new_df.groupby('time')[others].first()
+        out = out.join(extras, on='time')
+    
+    return out
+
+def detect_data_format(df):
+    """
+    Detect whether the data is in old or new format.
+    
+    Args:
+        df (pd.DataFrame): Input DataFrame
+        
+    Returns:
+        str: 'old' or 'new'
+    """
+    # Check for new format indicators
+    new_format_indicators = ['biosignaltime', 'heartratevalue', 'respirationratevalue', 
+                           'heartratevariabilityvalue', 'relativestrokevolumevalue']
+    
+    # Check for old format indicators
+    old_format_indicators = ['heart_rate_max', 'respiration_rate_max', 
+                           'heart_rate_variability_max', 'relative_stroke_volume_max']
+    
+    new_format_count = sum(1 for col in new_format_indicators if col in df.columns)
+    old_format_count = sum(1 for col in old_format_indicators if col in df.columns)
+    
+    print(f"New format indicators found: {new_format_count}")
+    print(f"Old format indicators found: {old_format_count}")
+    
+    if new_format_count > old_format_count:
+        return 'new'
+    elif old_format_count > 0:
+        return 'old'
+    else:
+        # If neither format is clearly detected, check for time column variations
+        time_columns = [col for col in df.columns if 'time' in col.lower()]
+        if 'biosignaltime' in time_columns:
+            return 'new'
+        elif 'time' in df.columns:
+            return 'old'
+        else:
+            # Default to old format if we can't determine
+            print("Warning: Could not determine data format, defaulting to old format")
+            return 'old'
 
 app.layout = html.Div([
     # Top section with title and date picker
@@ -142,13 +262,38 @@ app.layout = html.Div([
 
 
 def parse_contents(contents):
-    """Parse the uploaded CSV file."""
+    """Parse the uploaded CSV file and handle both old and new data formats."""
     content_type, content_string = contents.split(',')
     decoded = base64.b64decode(content_string)
     
     try:
         df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+        
+        # Normalize columns to lowercase
+        df.columns = [c.lower() for c in df.columns]
+
+        # Detect the data format
+        data_format = detect_data_format(df)
+        print(f"Detected data format: {data_format}")
+        print(f"Original columns: {list(df.columns)}")
+        
+        # Convert new format to old format if necessary
+        if data_format == 'new':
+            print("Converting new format to old format...")
+            df = convert_new_format_to_old(df)
+            print(f"Converted columns: {list(df.columns)}")
+        
+        # Ensure time column is properly formatted
         df['time'] = pd.to_datetime(df['time'])
+        
+        # Verify required columns exist
+        required_columns = ['heart_rate_variability_max', 'heart_rate_max', 
+                          'respiration_rate_max', 'relative_stroke_volume_max']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        
+        if missing_columns:
+            raise ValueError(f"Missing required columns after conversion: {missing_columns}")
+        
         return df
     except Exception as e:
         print(f"Error processing file: {str(e)}")
@@ -208,10 +353,41 @@ def process_data(contents, filename):
             )
         ])
         
-        return stored_data, slider_component, ""
+        # Create success message
+        success_message = html.Div([
+            html.P(
+                f"✅ Successfully loaded {filename}",
+                style={
+                    'color': '#059669',
+                    'fontFamily': FONT_FAMILY,
+                    'fontSize': '0.9rem',
+                    'margin': '10px 0',
+                    'padding': '8px 12px',
+                    'backgroundColor': '#d1fae5',
+                    'borderRadius': '6px',
+                    'border': '1px solid #a7f3d0'
+                }
+            )
+        ])
+        
+        return stored_data, slider_component, success_message
     
     except Exception as e:
-        error_message = f"Error processing file: {str(e)}"
+        error_message = html.Div([
+            html.P(
+                f"❌ Error processing file: {str(e)}",
+                style={
+                    'color': '#dc2626',
+                    'fontFamily': FONT_FAMILY,
+                    'fontSize': '0.9rem',
+                    'margin': '10px 0',
+                    'padding': '8px 12px',
+                    'backgroundColor': '#fee2e2',
+                    'borderRadius': '6px',
+                    'border': '1px solid #fecaca'
+                }
+            )
+        ])
         return {}, None, error_message
 
 
